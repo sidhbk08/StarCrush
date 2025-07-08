@@ -381,7 +381,7 @@ new CrushGame();
 					star.col = j; 
 					star.style.left = Math.floor(starSet[i][j].col * config.starWidth * 53.333333) + "px";
 					star.style.bottom = Math.floor(starSet[i][j].row * config.starHeight * 53.333333) + "px";
-					star.style.backgroundImage = "url('/images/star-match/" + starSet[i][j].number + ".png')";
+					star.style.backgroundImage = "url('images/star-match/" + starSet[i][j].number + ".png')";
 				}
 			}
 		},
