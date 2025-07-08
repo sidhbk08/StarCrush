@@ -22,7 +22,6 @@
 		tempStar: null,
 		choose: [],
 		level: parseInt(localStorage.getItem("star_match_level") || "1"),
-		localStorage.setItem("star_match_level", computed.level);
 		score: 0,	
 		totalScore: 0,
 		stepTargetScore: 500,	
@@ -382,7 +381,7 @@ new CrushGame();
 					star.col = j; 
 					star.style.left = Math.floor(starSet[i][j].col * config.starWidth * 53.333333) + "px";
 					star.style.bottom = Math.floor(starSet[i][j].row * config.starHeight * 53.333333) + "px";
-					star.style.backgroundImage = "url('/images" + starSet[i][j].number + ".png')";
+					star.style.backgroundImage = "url('/releases/images/star-match/" + starSet[i][j].number + ".png')";
 				}
 			}
 		},
