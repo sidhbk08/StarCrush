@@ -175,8 +175,8 @@
 						if(k>=temp.length-1){
 							setTimeout(function(k) {
 								// Save level to localStorage
-localStorage.setItem("star_match_level", computed.level);
-new CrushGame();
+								localStorage.setItem("star_match_level", computed.level);
+								new CrushGame();
 								var event = new CustomEvent("restart", { "detail": "Restart Game" });
         						document.dispatchEvent(event);
 							},500) 
