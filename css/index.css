@@ -35,7 +35,7 @@ ul,li{
 	left:0;
 	width:400px;
 	height:570px;
-	margin: 0 auto;
+	margin: 0px 5px 5px 5px;
 	background-image:url(../images/cover.jpg);
 	background-size:cover;
 	background-repeat:no-repeat;
