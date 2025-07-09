@@ -311,7 +311,7 @@
                     star.col = j;
                     star.style.left = (star.col * config.starWidth) + "rem";
                     star.style.bottom = (star.row * config.starHeight) + "rem";
-                    star.style.backgroundImage = "url('/images/" + star.number + ".png')";
+                    star.style.backgroundImage = "url('/images/" + starSet[i][j].number + ".png')";
                 }
             }
         },
