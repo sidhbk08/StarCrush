@@ -3,9 +3,7 @@
 		starWidth: .75,
 		starHeight: .75,
 		starSet: [],
-		//tableRows: 10,
-		tableRows: 8,
-		tableCols: 18,
+		tableRows: 10,
 		baseScore: 10,
 		stepScore: 20,
 		targetScore: 1000,
@@ -21,7 +19,7 @@
 		timer: null,
 		tempStar: null,
 		choose: [],
-		level: parseInt(localStorage.getItem("star_match_level") || "1"),
+		level: 1,
 		score: 0,	
 		totalScore: 0,
 		stepTargetScore: 500,	
@@ -174,15 +172,12 @@
 					el.removeChild(temp[k]);	
 						if(k>=temp.length-1){
 							setTimeout(function(k) {
-								// Save level to localStorage
-								localStorage.setItem("star_match_level", computed.level);
 								new CrushGame();
 								var event = new CustomEvent("restart", { "detail": "Restart Game" });
         						document.dispatchEvent(event);
 							},500) 
 						}
-				//}, k * 50, k);
-				}, k * 20, k);
+				}, k * 50, k);
 			}
 		},
 
@@ -207,14 +202,11 @@
 		
 		move: function() {
 			var rows = config.tableRows,
-			    cols = config.tableCols,
 				starSet = config.starSet;
-				console.log('move starSet: ',starSet)
-			//for (var i = 0; i < rows; i++) {
-			for (var i = 0; i < cols; i++) {
+			
+			for (var i = 0; i < rows; i++) {
 				var pointer = 0;
 				for (var j = 0; j < rows; j++) {
-				//for (var j = 0; j < cols; j++) {
 					if (starSet[j][i] != null) {
 						if (j !== pointer) {
 							starSet[pointer][i] = starSet[j][i];
@@ -229,7 +221,6 @@
 			for (var i = 0; i < starSet[0].length;) {
 				if (starSet[0][i] == null) {
 					for (var j = 0; j < rows; j++) {
-					//for (var j = 0; j < cols; j++) {
 						starSet[j].splice(i, 1);
 					}
 					continue;
@@ -311,14 +302,12 @@
 			}
 			arr.push(obj);
 			var starSet = config.starSet,
-				rows = config.tableRows,
-				cols = config.tableCols;
+				rows = config.tableRows;
 			if (obj.col > 0 && starSet[obj.row][obj.col - 1] && starSet[obj.row][obj.col - 1].number === obj.number && arr.indexOf(
 					starSet[obj.row][obj.col - 1]) === -1) {
 				this.checkLink(starSet[obj.row][obj.col - 1], arr);
 			}
-			//if (obj.col < rows - 1 && starSet[obj.row][obj.col + 1] && starSet[obj.row][obj.col + 1].number === obj.number && arr.indexOf(starSet[obj.row][obj.col + 1]) === -1) {
-			if (obj.col < cols - 1 && starSet[obj.row][obj.col + 1] && starSet[obj.row][obj.col + 1].number === obj.number &&
+			if (obj.col < rows - 1 && starSet[obj.row][obj.col + 1] && starSet[obj.row][obj.col + 1].number === obj.number &&
 				arr.indexOf(starSet[obj.row][obj.col + 1]) === -1) {
 				this.checkLink(starSet[obj.row][obj.col + 1], arr);
 			}
@@ -337,8 +326,7 @@
 				arr = config.starSet;
 			for (var i = 0; i < rows; i++) {
 				arr[i] = [];
-				//for (var j = 0; j < rows; j++) {
-				for (var j = 0; j < config.tableCols; j++) {
+				for (var j = 0; j < rows; j++) {
 					arr[i][j] = [];
 				}
 			}
@@ -379,9 +367,9 @@
 					}
 					star.row = i;
 					star.col = j; 
-					star.style.left = Math.floor(starSet[i][j].col * config.starWidth * 53.333333) + "px";
-					star.style.bottom = Math.floor(starSet[i][j].row * config.starHeight * 53.333333) + "px";
-					star.style.backgroundImage = "url('/images/" + starSet[i][j].number + ".png')";
+					star.style.left = starSet[i][j].col * config.starWidth + "rem";
+					star.style.bottom = starSet[i][j].row * config.starHeight + "rem";
+					star.style.backgroundImage = "url('images/" + starSet[i][j].number + ".png')";
 				}
 			}
 		},
@@ -406,3 +394,56 @@
 (function() {
 	new CrushGame()
 })();
+
+
+// Footer
+var pdnum = 27;
+var pdmax = 3;
+var pgnum = Math.ceil(pdnum / pdmax);
+var pgid = randomInt(0, pgnum - 1);
+var pdrelease = document.getElementById('releases');
+var pgnext = document.getElementById('nextpg');
+
+function randomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1) + min)
+}
+
+function getReleases(){
+    let prodNames = [
+        'Color Snake', 'Num Snake', 'Puppy Snake', 
+        'Blocker Snake', 'Apple Snake', 'Fruit Collect', 
+        'Space Fighter', 'Pong Game', 'Drag Maze', 
+        'Barcode Maze', 'Level Maze', 'Blocker Maze',
+        'Letter Swap', 'Math Flashcard', 'Card Match', 
+        'Memory Card', 'Brick Break', 'Wall Smash',
+        'Balloon Pop', 'Balloon Defense', 'Word Scramble',
+        'Word Search', 'Tic-Tac-Toe', 'Triangle Hunt',
+        'Triangle Match', '2048 Game', 'Minesweeper' 
+    ];
+    let prodLinks = [
+        'color-snake-game/pnncdeicbofogmklheappebjeaipgjfc', 'number-snake-game/nmemfbohjppeagfjiibhhcjjaidkblbe', 'puppy-snake-game/dljfiignakpaalgogccjiceagdakejmk',
+        'snake-vs-block-game/gfimhhnghaeemolpihbejepoklogamcl', 'apple-snake-game/jdfgnfoncpdcebhcnfjnfmbecppdiicl', 'fruit-collect-game/boifejgmdmjnngkddcmgagijknfahkdo', 
+        'space-fighter-game/fjgchmhpnpfnmicleekhoknicopcihco', 'pong/iibmocmonpccjkjpdgngimgdgpaeheje', 'drag-maze/mpekdelojgbomfnlgbakjjokngoidjhl',
+        'barcode-maze/jipngfhdlkeofjpinamebmcbdimgnfjm', 'level-maze/jbnboceikbdhfinjlebidbhhlplagahc', 'maze-blocker-game/hbalpiedginlkffbehlemkhdaoelegnh',       
+        'letter-swap-game/mlggpfoffidogjdniajdikhpgldkkdln', 'math-flashcard-game/cjfmbgdalchbgnfhejdmggefmpmaklhk', 'motion-card-match-game/mnhidgoophfkfjmgedocidmimieecanh',
+        'memory-card-game/ackehcmjoiepafdfnigbgmlpifjemcaa', 'brick-break-game/elfhjnoikdaaahliajecbhbnkahpaocf', 'wall-smash-game/kneehnmmfiinncdaeekgaaljnppeeobc', 
+        'balloon-pop-game/pbgdnjghdgdfbnbkjfoifioalopjgakp', 'balloon-defense-game/dpgoaocjleopffhnmibecijibcnajghd', 'word-scramble-game/kenapidglechhkgphplibhcjacaapghd', 
+        'word-search-game/pfekbcjkadkkanahofmindneikbdfbll', 'tic-tac-toe-game/ojphegfghpacfphdjogjfonakeemcpcf', 'unique-triangle-hunt-game/cilmialfmpdohhenkpadkgengcapciap',
+        'triangle-match-game/dlbjchffggckhkkgfkkalhnadfmlbalj', '2048-game/gekanafgchokbnoomokmmifkbnckkajk', 'minesweeper-game/ajncfhhlmbappdikagkajjaflholpepd'                
+    ];
+    let releases = '';
+    for(i = 0; i < pdmax; i++){
+        releases += '<div class="release' + (i < pdmax - 1 ? '' : ' last') + '"><a href="https://chromewebstore.google.com/detail/'+ prodLinks[pgid * pdmax + i] 
+        + '" target=_blank>' + prodNames[pgid * pdmax + i] + '</a></div>';
+    }
+    return releases;
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+   pdrelease.innerHTML = getReleases();
+   pgnext.addEventListener("click", function(){
+        pgid++;
+        pgid = pgid % pgnum;
+        pdrelease.innerHTML = getReleases()
+    });
+});
