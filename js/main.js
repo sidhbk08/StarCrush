@@ -370,7 +370,6 @@
 					star.style.left = starSet[i][j].col * config.starWidth + "rem";
 					star.style.bottom = starSet[i][j].row * config.starHeight + "rem";
 					star.style.backgroundImage = "url('images/" + starSet[i][j].number + ".png')";
-					console.log("url('images/" + starSet[i][j].number + ".png')";
 				}
 			}
 		},
