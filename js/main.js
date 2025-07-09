@@ -19,7 +19,7 @@
 		timer: null,
 		tempStar: null,
 		choose: [],
-		level: 1,
+		level: parseInt(localStorage.getItem("star_match_level") || "1"),
 		score: 0,	
 		totalScore: 0,
 		stepTargetScore: 500,	
@@ -73,8 +73,7 @@
 				len = choose.length;
 			if (!computed.flag || len <= 1) {
 				return;
-			}
-			else{
+			} else {
 				config.scoreSelect.style.opacity = '0';
 				computed.flag = false;
 				computed.tempStar = null;
@@ -93,7 +92,10 @@
 				setTimeout(function() {
 					self.move();
 					setTimeout(function() {
-						if (computed.totalScore >= config.targetScore) {	
+						if (computed.totalScore >= config.targetScore) {
+							// ✅ Save level after win
+							localStorage.setItem("star_match_level", computed.level);
+
 							self.gameover('win')
 							setTimeout(function() {
 								self.clear();
@@ -109,7 +111,7 @@
 								computed.flag = true;
 								computed.win = false;
 							} else {
-							    choose = [];
+								choose = [];
 								computed.flag = true;
 								self.mouseOver(computed.tempStar);
 							}
@@ -119,31 +121,31 @@
 		    }
 		},
 
-        gameover: function(winOrLose){
-        	var div = document.createElement('div');
-        	div.id = 'gameover';
-        	div.class = 'gameover';
-        	document.getElementById('starCrush').appendChild(div);
+		gameover: function(winOrLose){
+			var div = document.createElement('div');
+			div.id = 'gameover';
+			div.class = 'gameover';
+			document.getElementById('starCrush').appendChild(div);
 
-        	var msg, next;
-        	if(winOrLose == 'win'){
-        		msg = 'You Win!';
-        		next = 'Loading next level';
-        	}else{
-        		msg = 'You Loss :(';
-        		next = 'Continue with current level';
-        	}
-        	var p = document.createElement('p');
-        	p.id = 'msg';
-        	var text = document.createTextNode(msg);
-        	p.appendChild(text);
-        	document.getElementById('gameover').appendChild(p);	
-        	p = document.createElement('p');
-        	p.id = 'next';
-        	text = document.createTextNode(next);
-        	p.appendChild(text);
-        	document.getElementById('gameover').appendChild(p);	
-        },
+			var msg, next;
+			if(winOrLose == 'win'){
+				msg = 'You Win!';
+				next = 'Loading next level';
+			}else{
+				msg = 'You Loss :(';
+				next = 'Continue with current level';
+			}
+			var p = document.createElement('p');
+			p.id = 'msg';
+			var text = document.createTextNode(msg);
+			p.appendChild(text);
+			document.getElementById('gameover').appendChild(p);	
+			p = document.createElement('p');
+			p.id = 'next';
+			text = document.createTextNode(next);
+			p.appendChild(text);
+			document.getElementById('gameover').appendChild(p);	
+		},
 		
 		clear: function() {
 			var starSet = config.starSet,
@@ -160,9 +162,7 @@
 
 			for (var i = rows - 1; i >= 0; i--) {
 				for (var j = starSet[i].length - 1; j >= 0; j--) {
-					if (starSet[i][j] === null) {
-						continue;
-					}
+					if (starSet[i][j] === null) continue;
 					temp.push(starSet[i][j])
 					starSet[i][j] = null;
 				}
@@ -170,20 +170,20 @@
 			for (var k = 0; k < temp.length; k++) {
 				setTimeout(function(k) { 
 					el.removeChild(temp[k]);	
-						if(k>=temp.length-1){
-							setTimeout(function(k) {
-								new CrushGame();
-								var event = new CustomEvent("restart", { "detail": "Restart Game" });
-        						document.dispatchEvent(event);
-							},500) 
-						}
+					if(k >= temp.length - 1){
+						setTimeout(function(k) {
+							// ✅ Optionally reinforce level save on restart
+							localStorage.setItem("star_match_level", computed.level);
+
+							new CrushGame();
+							var event = new CustomEvent("restart", { "detail": "Restart Game" });
+							document.dispatchEvent(event);
+						}, 500);
+					}
 				}, k * 50, k);
 			}
 		},
 
-		/**
-		 * @returns {boolean}
-		 */
 		isFinish: function() {
 			var starSet = config.starSet,
 				rows = starSet.length;
@@ -203,7 +203,6 @@
 		move: function() {
 			var rows = config.tableRows,
 				starSet = config.starSet;
-			
 			for (var i = 0; i < rows; i++) {
 				var pointer = 0;
 				for (var j = 0; j < rows; j++) {
@@ -217,7 +216,6 @@
 					}
 				}
 			}
-			
 			for (var i = 0; i < starSet[0].length;) {
 				if (starSet[0][i] == null) {
 					for (var j = 0; j < rows; j++) {
@@ -227,12 +225,9 @@
 				}
 				i++;
 			}
-			this.refresh()
+			this.refresh();
 		},
 
-		/**
-		 * @param obj
-		 */
 		mouseOver: function(obj) {
 			if (!computed.flag) {
 				computed.tempStar = obj;
@@ -250,20 +245,15 @@
 			this.computeScore(choose);
 		},
 
-		/**
-		 * @param arr
-		 */
 		computeScore: function(arr) {
 			var score = 0,
 				len = arr.length,
 				baseScore = config.baseScore,
 				stepScore = config.stepScore;
 			for (var i = 0; i < len; i++) {
-				score += baseScore + i * stepScore
+				score += baseScore + i * stepScore;
 			}
-			if (score <= 0) {
-				return;
-			}
+			if (score <= 0) return;
 			computed.score = score;
 			config.scoreSelect.style.opacity = '1';
 			config.scoreSelect.innerHTML = "Crush " + arr.length + " stars to get " + score + " points";
@@ -274,49 +264,33 @@
 			for (var i = 0; i < starSet.length; i++) {
 				for (var j = 0; j < starSet[i].length; j++) {
 					var div = starSet[i][j];
-					if (div === null) {
-						continue;
-					}
+					if (div === null) continue;
 					div.classList.remove("scale");
 				}
 			}
 		},
 
-		/**
-		 * @param arr
-		 */
 		flicker: function(arr) {
 			for (var i = 0; i < arr.length; i++) {
-				var div = arr[i];
-				div.classList.add("scale");
+				arr[i].classList.add("scale");
 			}
 		},
 
-		/**
-		 * @param obj star
-		 * @param arr choose
-		 */
 		checkLink: function(obj, arr) {
-			if (obj === null) {
-				return;
-			}
+			if (obj === null) return;
 			arr.push(obj);
 			var starSet = config.starSet,
 				rows = config.tableRows;
-			if (obj.col > 0 && starSet[obj.row][obj.col - 1] && starSet[obj.row][obj.col - 1].number === obj.number && arr.indexOf(
-					starSet[obj.row][obj.col - 1]) === -1) {
+			if (obj.col > 0 && starSet[obj.row][obj.col - 1]?.number === obj.number && !arr.includes(starSet[obj.row][obj.col - 1])) {
 				this.checkLink(starSet[obj.row][obj.col - 1], arr);
 			}
-			if (obj.col < rows - 1 && starSet[obj.row][obj.col + 1] && starSet[obj.row][obj.col + 1].number === obj.number &&
-				arr.indexOf(starSet[obj.row][obj.col + 1]) === -1) {
+			if (obj.col < rows - 1 && starSet[obj.row][obj.col + 1]?.number === obj.number && !arr.includes(starSet[obj.row][obj.col + 1])) {
 				this.checkLink(starSet[obj.row][obj.col + 1], arr);
 			}
-			if (obj.row < rows - 1 && starSet[obj.row + 1][obj.col] && starSet[obj.row + 1][obj.col].number === obj.number &&
-				arr.indexOf(starSet[obj.row + 1][obj.col]) === -1) {
+			if (obj.row < rows - 1 && starSet[obj.row + 1][obj.col]?.number === obj.number && !arr.includes(starSet[obj.row + 1][obj.col])) {
 				this.checkLink(starSet[obj.row + 1][obj.col], arr);
 			}
-			if (obj.row > 0 && starSet[obj.row - 1][obj.col] && starSet[obj.row - 1][obj.col].number === obj.number && arr.indexOf(
-					starSet[obj.row - 1][obj.col]) === -1) {
+			if (obj.row > 0 && starSet[obj.row - 1][obj.col]?.number === obj.number && !arr.includes(starSet[obj.row - 1][obj.col])) {
 				this.checkLink(starSet[obj.row - 1][obj.col], arr);
 			}
 		},
@@ -342,18 +316,13 @@
 				var rows = starSet[i].length;
 				for (var j = 0; j < rows; j++) {
 					var star = this.createBlockStar(Math.floor(Math.random() * 5), i, j);
-					star.onmouseover = function() {
-						self.mouseOver(this)
-					};
-					star.onclick = function() {
-						self.mouseClick();
-					};
-					 
+					star.onmouseover = function() { self.mouseOver(this) };
+					star.onclick = function() { self.mouseClick() };
 					starSet[i][j] = star;
 					el.appendChild(star);
 				}
 			}
-			this.refresh()
+			this.refresh();
 		},
 		
 		refresh: function() {
@@ -362,39 +331,27 @@
 				var row = starSet[i].length;
 				for (var j = 0; j < row; j++) {
 					var star = starSet[i][j];
-					if (star == null) {
-						continue;
-					}
+					if (star == null) continue;
 					star.row = i;
 					star.col = j; 
-					star.style.left = starSet[i][j].col * config.starWidth + "rem";
-					star.style.bottom = starSet[i][j].row * config.starHeight + "rem";
-					star.style.backgroundImage = "url('/images/" + starSet[i][j].number + ".png')";
+					star.style.left = star.col * config.starWidth + "rem";
+					star.style.bottom = star.row * config.starHeight + "rem";
+					star.style.backgroundImage = "url('/images/" + star.number + ".png')";
 				}
 			}
 		},
-		
-		/**
-		 * @param number
-		 * @param row
-		 * @param col
-		 * @returns {HTMLElement}
-		 */
+
 		createBlockStar: function(number, row, col) {
 			return new BlockStar(number, row, col);
 		},
-
 	};
 	CrushGame.prototype.init.prototype = CrushGame.prototype;
 	window.CrushGame = CrushGame;
-
-
 })();
 
 (function() {
 	new CrushGame()
 })();
-
 
 // Footer
 var pdnum = 27;
