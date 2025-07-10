@@ -1,4 +1,4 @@
-(function() { 
+(function () {
 	var config = {
 		starWidth: .75,
 		starHeight: .75,
@@ -12,17 +12,17 @@
 		scoreTarget: document.querySelector('#scoreTarget'),
 		scoreCurrent: document.querySelector('#scoreCurrent'),
 		scoreSelect: document.querySelector('#scoreSelect'),
-	}; 
-	
+	};
+
 	var computed = {
 		flag: true,
 		timer: null,
 		tempStar: null,
 		choose: [],
 		level: 1,
-		score: 0,	
+		score: 0,
 		totalScore: 0,
-		stepTargetScore: 500,	
+		stepTargetScore: 500,
 		win: false
 	};
 
@@ -34,24 +34,27 @@
 		star.row = row;
 		star.col = col;
 		return star;
-	} 
+	}
 
 	function CrushGame() {
 		return new CrushGame.prototype.init();
 	}
 
 	CrushGame.prototype = {
-		init: function() {
+		init: function () {
+			// Load level from localStorage
+			const savedLevel = localStorage.getItem('starCrushLevel');
+			computed.level = savedLevel ? parseInt(savedLevel, 10) : 1;
 			this.initTable();
 		},
-		
-		initTable: function() {
+
+		initTable: function () {
 			this.initScore();
 			this.initStarSet();
 			this.initBlockStars();
 		},
 
-		initScore: function() {
+		initScore: function () {
 			new Utils(config.scoreCurrent, computed.totalScore, 0).start();
 			if (computed.win) {
 				new Utils(config.scoreTarget, config.targetScore, config.targetScore += computed.stepTargetScore).start();
@@ -62,8 +65,8 @@
 			}
 			computed.totalScore = 0;
 		},
-		
-		mouseClick: function() {
+
+		mouseClick: function () {
 			var starSet = config.starSet,
 				choose = computed.choose,
 				baseScore = config.baseScore,
@@ -73,83 +76,89 @@
 				len = choose.length;
 			if (!computed.flag || len <= 1) {
 				return;
-			}
-			else{
+			} else {
 				config.scoreSelect.style.opacity = '0';
 				computed.flag = false;
 				computed.tempStar = null;
 				var score = 0;
 				for (var i = 0; i < len; i++) {
-					score += baseScore + i * stepScore; 
+					score += baseScore + i * stepScore;
 				}
 
 				new Utils(config.scoreCurrent, computed.totalScore, computed.totalScore += score).start();
 				for (var i = 0; i < len; i++) {
-					setTimeout(function(i) {
+					setTimeout(function (i) {
 						starSet[choose[i].row][choose[i].col] = null;
 						el.removeChild(choose[i]);
 					}, i * 100, i);
 				}
-				setTimeout(function() {
+				setTimeout(function () {
 					self.move();
-					setTimeout(function() {
-						if (computed.totalScore >= config.targetScore) {	
-							self.gameover('win')
-							setTimeout(function() {
+					setTimeout(function () {
+						if (computed.totalScore >= config.targetScore) {
+							self.gameover('win');
+							setTimeout(function () {
 								self.clear();
 							}, 2000);
 							computed.flag = true;
 							computed.win = true;
+
+							// Save level to localStorage
+							localStorage.setItem('starCrushLevel', computed.level);
 						} else {
-							if (self.isFinish()) {	
-								self.gameover('lose')	
-								setTimeout(function() {
+							if (self.isFinish()) {
+								self.gameover('lose');
+								setTimeout(function () {
 									self.clear();
 								}, 2000);
 								computed.flag = true;
 								computed.win = false;
+
+								// Optional: reset level to 1 after loss
+								computed.level = 1;
+								localStorage.setItem('starCrushLevel', computed.level);
 							} else {
-							    choose = [];
+								choose = [];
 								computed.flag = true;
 								self.mouseOver(computed.tempStar);
 							}
 						}
 					}, 400 + choose.length * 150);
 				}, choose.length * 100);
-		    }
+			}
 		},
 
-        gameover: function(winOrLose){
-        	var div = document.createElement('div');
-        	div.id = 'gameover';
-        	div.class = 'gameover';
-        	document.getElementById('starCrush').appendChild(div);
+		gameover: function (winOrLose) {
+			var div = document.createElement('div');
+			div.id = 'gameover';
+			div.class = 'gameover';
+			document.getElementById('starCrush').appendChild(div);
 
-        	var msg, next;
-        	if(winOrLose == 'win'){
-        		msg = 'You Win!';
-        		next = 'Loading next level';
-        	}else{
-        		msg = 'You Loss :(';
-        		next = 'Continue with current level';
-        	}
-        	var p = document.createElement('p');
-        	p.id = 'msg';
-        	var text = document.createTextNode(msg);
-        	p.appendChild(text);
-        	document.getElementById('gameover').appendChild(p);	
-        	p = document.createElement('p');
-        	p.id = 'next';
-        	text = document.createTextNode(next);
-        	p.appendChild(text);
-        	document.getElementById('gameover').appendChild(p);	
-        },
-		
-		clear: function() {
+			var msg, next;
+			if (winOrLose == 'win') {
+				msg = 'You Win!';
+				next = 'Loading next level';
+			} else {
+				msg = 'You Loss :(';
+				next = 'Continue with current level';
+			}
+			var p = document.createElement('p');
+			p.id = 'msg';
+			var text = document.createTextNode(msg);
+			p.appendChild(text);
+			document.getElementById('gameover').appendChild(p);
+			p = document.createElement('p');
+			p.id = 'next';
+			text = document.createTextNode(next);
+			p.appendChild(text);
+			document.getElementById('gameover').appendChild(p);
+		},
+
+		clear: function () {
 			var starSet = config.starSet,
 				rows = starSet.length,
 				el = config.el,
-				self = this; 
+				self = this;
 			var temp = [];
 
 			var gameover = document.querySelector('#gameover');
@@ -163,28 +172,25 @@
 					if (starSet[i][j] === null) {
 						continue;
 					}
-					temp.push(starSet[i][j])
+					temp.push(starSet[i][j]);
 					starSet[i][j] = null;
 				}
 			}
 			for (var k = 0; k < temp.length; k++) {
-				setTimeout(function(k) { 
-					el.removeChild(temp[k]);	
-						if(k>=temp.length-1){
-							setTimeout(function(k) {
-								new CrushGame();
-								var event = new CustomEvent("restart", { "detail": "Restart Game" });
-        						document.dispatchEvent(event);
-							},500) 
-						}
+				setTimeout(function (k) {
+					el.removeChild(temp[k]);
+					if (k >= temp.length - 1) {
+						setTimeout(function () {
+							new CrushGame();
+							var event = new CustomEvent("restart", { "detail": "Restart Game" });
+							document.dispatchEvent(event);
+						}, 500);
+					}
 				}, k * 50, k);
 			}
 		},
 
-		/**
-		 * @returns {boolean}
-		 */
-		isFinish: function() {
+		isFinish: function () {
 			var starSet = config.starSet,
 				rows = starSet.length;
 			for (var i = 0; i < rows; i++) {
@@ -199,11 +205,11 @@
 			}
 			return true;
 		},
-		
-		move: function() {
+
+		move: function () {
 			var rows = config.tableRows,
 				starSet = config.starSet;
-			
+
 			for (var i = 0; i < rows; i++) {
 				var pointer = 0;
 				for (var j = 0; j < rows; j++) {
@@ -217,7 +223,7 @@
 					}
 				}
 			}
-			
+
 			for (var i = 0; i < starSet[0].length;) {
 				if (starSet[0][i] == null) {
 					for (var j = 0; j < rows; j++) {
@@ -227,13 +233,10 @@
 				}
 				i++;
 			}
-			this.refresh()
+			this.refresh();
 		},
 
-		/**
-		 * @param obj
-		 */
-		mouseOver: function(obj) {
+		mouseOver: function (obj) {
 			if (!computed.flag) {
 				computed.tempStar = obj;
 				return;
@@ -250,16 +253,13 @@
 			this.computeScore(choose);
 		},
 
-		/**
-		 * @param arr
-		 */
-		computeScore: function(arr) {
+		computeScore: function (arr) {
 			var score = 0,
 				len = arr.length,
 				baseScore = config.baseScore,
 				stepScore = config.stepScore;
 			for (var i = 0; i < len; i++) {
-				score += baseScore + i * stepScore
+				score += baseScore + i * stepScore;
 			}
 			if (score <= 0) {
 				return;
@@ -268,8 +268,8 @@
 			config.scoreSelect.style.opacity = '1';
 			config.scoreSelect.innerHTML = "Crush " + arr.length + " stars to get " + score + " points";
 		},
-		
-		clearFlicker: function() {
+
+		clearFlicker: function () {
 			var starSet = config.starSet;
 			for (var i = 0; i < starSet.length; i++) {
 				for (var j = 0; j < starSet[i].length; j++) {
@@ -282,21 +282,14 @@
 			}
 		},
 
-		/**
-		 * @param arr
-		 */
-		flicker: function(arr) {
+		flicker: function (arr) {
 			for (var i = 0; i < arr.length; i++) {
 				var div = arr[i];
 				div.classList.add("scale");
 			}
 		},
 
-		/**
-		 * @param obj star
-		 * @param arr choose
-		 */
-		checkLink: function(obj, arr) {
+		checkLink: function (obj, arr) {
 			if (obj === null) {
 				return;
 			}
@@ -304,7 +297,7 @@
 			var starSet = config.starSet,
 				rows = config.tableRows;
 			if (obj.col > 0 && starSet[obj.row][obj.col - 1] && starSet[obj.row][obj.col - 1].number === obj.number && arr.indexOf(
-					starSet[obj.row][obj.col - 1]) === -1) {
+				starSet[obj.row][obj.col - 1]) === -1) {
 				this.checkLink(starSet[obj.row][obj.col - 1], arr);
 			}
 			if (obj.col < rows - 1 && starSet[obj.row][obj.col + 1] && starSet[obj.row][obj.col + 1].number === obj.number &&
@@ -316,12 +309,12 @@
 				this.checkLink(starSet[obj.row + 1][obj.col], arr);
 			}
 			if (obj.row > 0 && starSet[obj.row - 1][obj.col] && starSet[obj.row - 1][obj.col].number === obj.number && arr.indexOf(
-					starSet[obj.row - 1][obj.col]) === -1) {
+				starSet[obj.row - 1][obj.col]) === -1) {
 				this.checkLink(starSet[obj.row - 1][obj.col], arr);
 			}
 		},
-		
-		initStarSet: function() {
+
+		initStarSet: function () {
 			var rows = config.tableRows,
 				arr = config.starSet;
 			for (var i = 0; i < rows; i++) {
@@ -331,8 +324,8 @@
 				}
 			}
 		},
-		
-		initBlockStars: function() {
+
+		initBlockStars: function () {
 			var starSet = config.starSet,
 				self = this,
 				el = config.el,
@@ -342,21 +335,21 @@
 				var rows = starSet[i].length;
 				for (var j = 0; j < rows; j++) {
 					var star = this.createBlockStar(Math.floor(Math.random() * 5), i, j);
-					star.onmouseover = function() {
-						self.mouseOver(this)
+					star.onmouseover = function () {
+						self.mouseOver(this);
 					};
-					star.onclick = function() {
+					star.onclick = function () {
 						self.mouseClick();
 					};
-					 
+
 					starSet[i][j] = star;
 					el.appendChild(star);
 				}
 			}
-			this.refresh()
+			this.refresh();
 		},
-		
-		refresh: function() {
+
+		refresh: function () {
 			var starSet = config.starSet;
 			for (var i = 0; i < starSet.length; i++) {
 				var row = starSet[i].length;
@@ -366,84 +359,23 @@
 						continue;
 					}
 					star.row = i;
-					star.col = j; 
-					star.style.left = starSet[i][j].col * config.starWidth + "rem";
-					star.style.bottom = starSet[i][j].row * config.starHeight + "rem";
-					star.style.backgroundImage = "url('/StarCrush/images/photo/" + starSet[i][j].number + ".png')";
+					star.col = j;
+					star.style.left = star.col * config.starWidth + "rem";
+					star.style.bottom = star.row * config.starHeight + "rem";
+					star.style.backgroundImage = "url('images/photo/" + star.number + ".png')";
 				}
 			}
 		},
-		
-		/**
-		 * @param number
-		 * @param row
-		 * @param col
-		 * @returns {HTMLElement}
-		 */
-		createBlockStar: function(number, row, col) {
+
+		createBlockStar: function (number, row, col) {
 			return new BlockStar(number, row, col);
 		},
-
 	};
+
 	CrushGame.prototype.init.prototype = CrushGame.prototype;
 	window.CrushGame = CrushGame;
-
-
 })();
 
-(function() {
-	new CrushGame()
+(function () {
+	new CrushGame();
 })();
-
-
-// Footer
-var pdnum = 27;
-var pdmax = 3;
-var pgnum = Math.ceil(pdnum / pdmax);
-var pgid = randomInt(0, pgnum - 1);
-var pdrelease = document.getElementById('releases');
-var pgnext = document.getElementById('nextpg');
-
-function randomInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1) + min)
-}
-
-function getReleases(){
-    let prodNames = [
-        'Color Snake', 'Num Snake', 'Puppy Snake', 
-        'Blocker Snake', 'Apple Snake', 'Fruit Collect', 
-        'Space Fighter', 'Pong Game', 'Drag Maze', 
-        'Barcode Maze', 'Level Maze', 'Blocker Maze',
-        'Letter Swap', 'Math Flashcard', 'Card Match', 
-        'Memory Card', 'Brick Break', 'Wall Smash',
-        'Balloon Pop', 'Balloon Defense', 'Word Scramble',
-        'Word Search', 'Tic-Tac-Toe', 'Triangle Hunt',
-        'Triangle Match', '2048 Game', 'Minesweeper' 
-    ];
-    let prodLinks = [
-        'color-snake-game/pnncdeicbofogmklheappebjeaipgjfc', 'number-snake-game/nmemfbohjppeagfjiibhhcjjaidkblbe', 'puppy-snake-game/dljfiignakpaalgogccjiceagdakejmk',
-        'snake-vs-block-game/gfimhhnghaeemolpihbejepoklogamcl', 'apple-snake-game/jdfgnfoncpdcebhcnfjnfmbecppdiicl', 'fruit-collect-game/boifejgmdmjnngkddcmgagijknfahkdo', 
-        'space-fighter-game/fjgchmhpnpfnmicleekhoknicopcihco', 'pong/iibmocmonpccjkjpdgngimgdgpaeheje', 'drag-maze/mpekdelojgbomfnlgbakjjokngoidjhl',
-        'barcode-maze/jipngfhdlkeofjpinamebmcbdimgnfjm', 'level-maze/jbnboceikbdhfinjlebidbhhlplagahc', 'maze-blocker-game/hbalpiedginlkffbehlemkhdaoelegnh',       
-        'letter-swap-game/mlggpfoffidogjdniajdikhpgldkkdln', 'math-flashcard-game/cjfmbgdalchbgnfhejdmggefmpmaklhk', 'motion-card-match-game/mnhidgoophfkfjmgedocidmimieecanh',
-        'memory-card-game/ackehcmjoiepafdfnigbgmlpifjemcaa', 'brick-break-game/elfhjnoikdaaahliajecbhbnkahpaocf', 'wall-smash-game/kneehnmmfiinncdaeekgaaljnppeeobc', 
-        'balloon-pop-game/pbgdnjghdgdfbnbkjfoifioalopjgakp', 'balloon-defense-game/dpgoaocjleopffhnmibecijibcnajghd', 'word-scramble-game/kenapidglechhkgphplibhcjacaapghd', 
-        'word-search-game/pfekbcjkadkkanahofmindneikbdfbll', 'tic-tac-toe-game/ojphegfghpacfphdjogjfonakeemcpcf', 'unique-triangle-hunt-game/cilmialfmpdohhenkpadkgengcapciap',
-        'triangle-match-game/dlbjchffggckhkkgfkkalhnadfmlbalj', '2048-game/gekanafgchokbnoomokmmifkbnckkajk', 'minesweeper-game/ajncfhhlmbappdikagkajjaflholpepd'                
-    ];
-    let releases = '';
-    for(i = 0; i < pdmax; i++){
-        releases += '<div class="release' + (i < pdmax - 1 ? '' : ' last') + '"><a href="https://chromewebstore.google.com/detail/'+ prodLinks[pgid * pdmax + i] 
-        + '" target=_blank>' + prodNames[pgid * pdmax + i] + '</a></div>';
-    }
-    return releases;
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-   pdrelease.innerHTML = getReleases();
-   pgnext.addEventListener("click", function(){
-        pgid++;
-        pgid = pgid % pgnum;
-        pdrelease.innerHTML = getReleases()
-    });
-});
