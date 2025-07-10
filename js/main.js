@@ -1,4 +1,4 @@
-(function () {
+(function() { 
 	var config = {
 		starWidth: .75,
 		starHeight: .75,
@@ -12,17 +12,17 @@
 		scoreTarget: document.querySelector('#scoreTarget'),
 		scoreCurrent: document.querySelector('#scoreCurrent'),
 		scoreSelect: document.querySelector('#scoreSelect'),
-	};
-
+	}; 
+	
 	var computed = {
 		flag: true,
 		timer: null,
 		tempStar: null,
 		choose: [],
 		level: 1,
-		score: 0,
+		score: 0,	
 		totalScore: 0,
-		stepTargetScore: 500,
+		stepTargetScore: 500,	
 		win: false
 	};
 
@@ -34,55 +34,36 @@
 		star.row = row;
 		star.col = col;
 		return star;
-	}
+	} 
 
 	function CrushGame() {
 		return new CrushGame.prototype.init();
 	}
 
 	CrushGame.prototype = {
-	init: function () {
-		// Load saved level and targetScore from localStorage or set defaults
-		const savedLevel = localStorage.getItem('starCrushLevel');
-		const savedTargetScore = localStorage.getItem('starCrushTargetScore');
-		computed.level = savedLevel ? parseInt(savedLevel, 10) : 1;
-		config.targetScore = savedTargetScore ? parseInt(savedTargetScore, 10) : 1000;
+		init: function() {
+			this.initTable();
+		},
+		
+		initTable: function() {
+			this.initScore();
+			this.initStarSet();
+			this.initBlockStars();
+		},
 
-		this.initTable();
-	},
-
-	initTable: function () {
-		this.initScore();
-		this.initStarSet();
-		this.initBlockStars();
-	},
-
-	initScore: function () {
-		new Utils(config.scoreCurrent, computed.totalScore, 0).start();
-
-		if (computed.win) {
-			// Increase level and targetScore only once per win
-			config.targetScore += computed.stepTargetScore;
-			computed.level += 1;
-
-			// Save to localStorage
-			localStorage.setItem("starCrushLevel", computed.level);
-			localStorage.setItem("starCrushTargetScore", config.targetScore);
-
-			new Utils(config.scoreTarget, config.targetScore, config.targetScore).start();
-			new Utils(config.scoreLevel, computed.level, computed.level).start();
-
-			// Reset win flag so level doesn't keep incrementing on reload
-			computed.win = false;
-		} else {
-			new Utils(config.scoreTarget, config.targetScore, config.targetScore).start();
-			new Utils(config.scoreLevel, computed.level, computed.level).start();
-		}
-
-		computed.totalScore = 0;
-	        }
-
-		mouseClick: function () {
+		initScore: function() {
+			new Utils(config.scoreCurrent, computed.totalScore, 0).start();
+			if (computed.win) {
+				new Utils(config.scoreTarget, config.targetScore, config.targetScore += computed.stepTargetScore).start();
+				new Utils(config.scoreLevel, computed.level, computed.level += 1).start();
+			} else {
+				new Utils(config.scoreTarget, config.targetScore, config.targetScore).start();
+				new Utils(config.scoreLevel, computed.level, computed.level).start();
+			}
+			computed.totalScore = 0;
+		},
+		
+		mouseClick: function() {
 			var starSet = config.starSet,
 				choose = computed.choose,
 				baseScore = config.baseScore,
@@ -92,88 +73,83 @@
 				len = choose.length;
 			if (!computed.flag || len <= 1) {
 				return;
-			} else {
+			}
+			else{
 				config.scoreSelect.style.opacity = '0';
 				computed.flag = false;
 				computed.tempStar = null;
 				var score = 0;
 				for (var i = 0; i < len; i++) {
-					score += baseScore + i * stepScore;
+					score += baseScore + i * stepScore; 
 				}
 
 				new Utils(config.scoreCurrent, computed.totalScore, computed.totalScore += score).start();
 				for (var i = 0; i < len; i++) {
-					setTimeout(function (i) {
+					setTimeout(function(i) {
 						starSet[choose[i].row][choose[i].col] = null;
 						el.removeChild(choose[i]);
 					}, i * 100, i);
 				}
-				setTimeout(function () {
+				setTimeout(function() {
 					self.move();
-					setTimeout(function () {
-						if (computed.totalScore >= config.targetScore) {
-                                                    self.gameover('win');
-                                                    setTimeout(function () {
-                                             	        self.clear();
-
-                                                        localStorage.setItem('starCrushLevel', computed.level);
-                                                    }, 2000);
-                                                    computed.flag = true;
-                                                    computed.win = true;
+					setTimeout(function() {
+						if (computed.totalScore >= config.targetScore) {	
+							self.gameover('win')
+							setTimeout(function() {
+								self.clear();
+							}, 2000);
+							computed.flag = true;
+							computed.win = true;
 						} else {
-							if (self.isFinish()) {
-								self.gameover('lose');
-								setTimeout(function () {
+							if (self.isFinish()) {	
+								self.gameover('lose')	
+								setTimeout(function() {
 									self.clear();
 								}, 2000);
 								computed.flag = true;
 								computed.win = false;
-
-								// Optional: reset level to 1 after loss
-								computed.level = 1;
-								localStorage.setItem('starCrushLevel', computed.level);
 							} else {
-								choose = [];
+							    choose = [];
 								computed.flag = true;
 								self.mouseOver(computed.tempStar);
 							}
 						}
 					}, 400 + choose.length * 150);
 				}, choose.length * 100);
-			}
+		    }
 		},
 
-		gameover: function (winOrLose) {
-			var div = document.createElement('div');
-			div.id = 'gameover';
-			div.class = 'gameover';
-			document.getElementById('starCrush').appendChild(div);
+        gameover: function(winOrLose){
+        	var div = document.createElement('div');
+        	div.id = 'gameover';
+        	div.class = 'gameover';
+        	document.getElementById('starCrush').appendChild(div);
 
-			var msg, next;
-			if (winOrLose == 'win') {
-				msg = 'You Win!';
-				next = 'Loading next level';
-			} else {
-				msg = 'You Loss :(';
-				next = 'Continue with current level';
-			}
-			var p = document.createElement('p');
-			p.id = 'msg';
-			var text = document.createTextNode(msg);
-			p.appendChild(text);
-			document.getElementById('gameover').appendChild(p);
-			p = document.createElement('p');
-			p.id = 'next';
-			text = document.createTextNode(next);
-			p.appendChild(text);
-			document.getElementById('gameover').appendChild(p);
-		},
-
-		clear: function () {
+        	var msg, next;
+        	if(winOrLose == 'win'){
+        		msg = 'You Win!';
+        		next = 'Loading next level';
+        	}else{
+        		msg = 'You Loss :(';
+        		next = 'Continue with current level';
+        	}
+        	var p = document.createElement('p');
+        	p.id = 'msg';
+        	var text = document.createTextNode(msg);
+        	p.appendChild(text);
+        	document.getElementById('gameover').appendChild(p);	
+        	p = document.createElement('p');
+        	p.id = 'next';
+        	text = document.createTextNode(next);
+        	p.appendChild(text);
+        	document.getElementById('gameover').appendChild(p);	
+        },
+		
+		clear: function() {
 			var starSet = config.starSet,
 				rows = starSet.length,
 				el = config.el,
-				self = this;
+				self = this; 
 			var temp = [];
 
 			var gameover = document.querySelector('#gameover');
@@ -187,25 +163,28 @@
 					if (starSet[i][j] === null) {
 						continue;
 					}
-					temp.push(starSet[i][j]);
+					temp.push(starSet[i][j])
 					starSet[i][j] = null;
 				}
 			}
 			for (var k = 0; k < temp.length; k++) {
-				setTimeout(function (k) {
-					el.removeChild(temp[k]);
-					if (k >= temp.length - 1) {
-						setTimeout(function () {
-							new CrushGame();
-							var event = new CustomEvent("restart", { "detail": "Restart Game" });
-							document.dispatchEvent(event);
-						}, 500);
-					}
+				setTimeout(function(k) { 
+					el.removeChild(temp[k]);	
+						if(k>=temp.length-1){
+							setTimeout(function(k) {
+								new CrushGame();
+								var event = new CustomEvent("restart", { "detail": "Restart Game" });
+        						document.dispatchEvent(event);
+							},500) 
+						}
 				}, k * 50, k);
 			}
 		},
 
-		isFinish: function () {
+		/**
+		 * @returns {boolean}
+		 */
+		isFinish: function() {
 			var starSet = config.starSet,
 				rows = starSet.length;
 			for (var i = 0; i < rows; i++) {
@@ -220,11 +199,11 @@
 			}
 			return true;
 		},
-
-		move: function () {
+		
+		move: function() {
 			var rows = config.tableRows,
 				starSet = config.starSet;
-
+			
 			for (var i = 0; i < rows; i++) {
 				var pointer = 0;
 				for (var j = 0; j < rows; j++) {
@@ -238,7 +217,7 @@
 					}
 				}
 			}
-
+			
 			for (var i = 0; i < starSet[0].length;) {
 				if (starSet[0][i] == null) {
 					for (var j = 0; j < rows; j++) {
@@ -248,10 +227,13 @@
 				}
 				i++;
 			}
-			this.refresh();
+			this.refresh()
 		},
 
-		mouseOver: function (obj) {
+		/**
+		 * @param obj
+		 */
+		mouseOver: function(obj) {
 			if (!computed.flag) {
 				computed.tempStar = obj;
 				return;
@@ -268,13 +250,16 @@
 			this.computeScore(choose);
 		},
 
-		computeScore: function (arr) {
+		/**
+		 * @param arr
+		 */
+		computeScore: function(arr) {
 			var score = 0,
 				len = arr.length,
 				baseScore = config.baseScore,
 				stepScore = config.stepScore;
 			for (var i = 0; i < len; i++) {
-				score += baseScore + i * stepScore;
+				score += baseScore + i * stepScore
 			}
 			if (score <= 0) {
 				return;
@@ -283,8 +268,8 @@
 			config.scoreSelect.style.opacity = '1';
 			config.scoreSelect.innerHTML = "Crush " + arr.length + " stars to get " + score + " points";
 		},
-
-		clearFlicker: function () {
+		
+		clearFlicker: function() {
 			var starSet = config.starSet;
 			for (var i = 0; i < starSet.length; i++) {
 				for (var j = 0; j < starSet[i].length; j++) {
@@ -297,14 +282,21 @@
 			}
 		},
 
-		flicker: function (arr) {
+		/**
+		 * @param arr
+		 */
+		flicker: function(arr) {
 			for (var i = 0; i < arr.length; i++) {
 				var div = arr[i];
 				div.classList.add("scale");
 			}
 		},
 
-		checkLink: function (obj, arr) {
+		/**
+		 * @param obj star
+		 * @param arr choose
+		 */
+		checkLink: function(obj, arr) {
 			if (obj === null) {
 				return;
 			}
@@ -312,7 +304,7 @@
 			var starSet = config.starSet,
 				rows = config.tableRows;
 			if (obj.col > 0 && starSet[obj.row][obj.col - 1] && starSet[obj.row][obj.col - 1].number === obj.number && arr.indexOf(
-				starSet[obj.row][obj.col - 1]) === -1) {
+					starSet[obj.row][obj.col - 1]) === -1) {
 				this.checkLink(starSet[obj.row][obj.col - 1], arr);
 			}
 			if (obj.col < rows - 1 && starSet[obj.row][obj.col + 1] && starSet[obj.row][obj.col + 1].number === obj.number &&
@@ -324,12 +316,12 @@
 				this.checkLink(starSet[obj.row + 1][obj.col], arr);
 			}
 			if (obj.row > 0 && starSet[obj.row - 1][obj.col] && starSet[obj.row - 1][obj.col].number === obj.number && arr.indexOf(
-				starSet[obj.row - 1][obj.col]) === -1) {
+					starSet[obj.row - 1][obj.col]) === -1) {
 				this.checkLink(starSet[obj.row - 1][obj.col], arr);
 			}
 		},
-
-		initStarSet: function () {
+		
+		initStarSet: function() {
 			var rows = config.tableRows,
 				arr = config.starSet;
 			for (var i = 0; i < rows; i++) {
@@ -339,8 +331,8 @@
 				}
 			}
 		},
-
-		initBlockStars: function () {
+		
+		initBlockStars: function() {
 			var starSet = config.starSet,
 				self = this,
 				el = config.el,
@@ -350,21 +342,21 @@
 				var rows = starSet[i].length;
 				for (var j = 0; j < rows; j++) {
 					var star = this.createBlockStar(Math.floor(Math.random() * 5), i, j);
-					star.onmouseover = function () {
-						self.mouseOver(this);
+					star.onmouseover = function() {
+						self.mouseOver(this)
 					};
-					star.onclick = function () {
+					star.onclick = function() {
 						self.mouseClick();
 					};
-
+					 
 					starSet[i][j] = star;
 					el.appendChild(star);
 				}
 			}
-			this.refresh();
+			this.refresh()
 		},
-
-		refresh: function () {
+		
+		refresh: function() {
 			var starSet = config.starSet;
 			for (var i = 0; i < starSet.length; i++) {
 				var row = starSet[i].length;
@@ -374,27 +366,34 @@
 						continue;
 					}
 					star.row = i;
-					star.col = j;
-					star.style.left = star.col * config.starWidth + "rem";
-					star.style.bottom = star.row * config.starHeight + "rem";
-					star.style.backgroundImage = "url('/StarCrush/images/photo/" + star.number + ".png')";
+					star.col = j; 
+					star.style.left = starSet[i][j].col * config.starWidth + "rem";
+					star.style.bottom = starSet[i][j].row * config.starHeight + "rem";
+					star.style.backgroundImage = "url('/StarCrush/images/photo/" + starSet[i][j].number + ".png')";
 				}
 			}
 		},
-
-		createBlockStar: function (number, row, col) {
+		
+		/**
+		 * @param number
+		 * @param row
+		 * @param col
+		 * @returns {HTMLElement}
+		 */
+		createBlockStar: function(number, row, col) {
 			return new BlockStar(number, row, col);
 		},
-	};
 
+	};
 	CrushGame.prototype.init.prototype = CrushGame.prototype;
 	window.CrushGame = CrushGame;
+
+
 })();
 
-(function () {
-	new CrushGame();
+(function() {
+	new CrushGame()
 })();
-
 
 
 // Footer
