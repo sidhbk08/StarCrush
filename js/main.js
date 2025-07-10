@@ -26,6 +26,14 @@
 		win: false
 	};
 
+	function getTargetScoreForLevel(level) {
+		let score = 1000;
+		for (let i = 2; i <= level; i++) {
+			score += i * 500;
+		}
+		return score;
+	}
+
 	function BlockStar(number, row, col) {
 		var star = document.createElement('li');
 		star.width = config.starWidth;
@@ -44,7 +52,7 @@
 		init: function () {
 			const savedLevel = localStorage.getItem('starCrushLevel');
 			computed.level = savedLevel ? parseInt(savedLevel, 10) : 1;
-			config.targetScore = 1000 + (computed.level - 1) * computed.stepTargetScore;
+			config.targetScore = getTargetScoreForLevel(computed.level);
 			this.initTable();
 		},
 
@@ -56,14 +64,11 @@
 
 		initScore: function () {
 			new Utils(config.scoreCurrent, computed.totalScore, 0).start();
-
 			if (computed.win) {
 				computed.level += 1;
-				config.targetScore += computed.stepTargetScore;
-
-				new Utils(config.scoreTarget, config.targetScore - computed.stepTargetScore, config.targetScore).start();
+				config.targetScore = getTargetScoreForLevel(computed.level);
+				new Utils(config.scoreTarget, config.targetScore - computed.level * 500, config.targetScore).start();
 				new Utils(config.scoreLevel, computed.level - 1, computed.level).start();
-
 				localStorage.setItem('starCrushLevel', computed.level);
 			} else {
 				new Utils(config.scoreTarget, config.targetScore, config.targetScore).start();
@@ -107,14 +112,12 @@
 					if (computed.totalScore >= config.targetScore) {
 						computed.win = true;
 						self.gameover('win');
-
 						setTimeout(function () {
 							self.clear();
 						}, 2000);
 					} else if (self.isFinish()) {
 						computed.win = false;
 						self.gameover('lose');
-
 						setTimeout(function () {
 							computed.level = 1;
 							localStorage.setItem('starCrushLevel', computed.level);
@@ -262,18 +265,16 @@
 		},
 
 		flicker: function (arr) {
-			for (let div of arr) {
-				div.classList.add("scale");
-			}
+			arr.forEach(div => div.classList.add("scale"));
 		},
 
 		checkLink: function (obj, arr) {
-			if (!obj || arr.includes(obj)) return;
+			if (obj === null) return;
 			arr.push(obj);
-			var starSet = config.starSet;
-			let row = obj.row, col = obj.col;
-
-			[[0, -1], [0, 1], [-1, 0], [1, 0]].forEach(([dr, dc]) => {
+			let row = obj.row, col = obj.col, starSet = config.starSet;
+			[
+				[-1, 0], [1, 0], [0, -1], [0, 1]
+			].forEach(([dr, dc]) => {
 				let r = row + dr, c = col + dc;
 				if (r >= 0 && r < config.tableRows && c >= 0 && c < config.tableRows) {
 					let neighbor = starSet[r][c];
@@ -285,8 +286,7 @@
 		},
 
 		initStarSet: function () {
-			var rows = config.tableRows;
-			for (var i = 0; i < rows; i++) {
+			for (let i = 0; i < config.tableRows; i++) {
 				config.starSet[i] = [];
 			}
 		},
@@ -294,14 +294,13 @@
 		initBlockStars: function () {
 			var starSet = config.starSet,
 				el = config.el,
-				self = this,
-				cols = starSet.length;
+				self = this;
 
 			computed.flag = true;
 
-			for (var i = 0; i < cols; i++) {
-				for (var j = 0; j < config.tableRows; j++) {
-					var star = this.createBlockStar(Math.floor(Math.random() * 5), i, j);
+			for (let i = 0; i < config.tableRows; i++) {
+				for (let j = 0; j < config.tableRows; j++) {
+					let star = this.createBlockStar(Math.floor(Math.random() * 5), i, j);
 					star.onmouseover = function () {
 						self.mouseOver(this);
 					};
@@ -317,15 +316,15 @@
 
 		refresh: function () {
 			var starSet = config.starSet;
-			for (var i = 0; i < starSet.length; i++) {
-				for (var j = 0; j < starSet[i].length; j++) {
-					var star = starSet[i][j];
+			for (let i = 0; i < starSet.length; i++) {
+				for (let j = 0; j < starSet[i].length; j++) {
+					let star = starSet[i][j];
 					if (!star) continue;
 					star.row = i;
 					star.col = j;
 					star.style.left = star.col * config.starWidth + "rem";
 					star.style.bottom = star.row * config.starHeight + "rem";
-					star.style.backgroundImage = "url('/StarCrush/images/photo/" + star.number + ".png')";
+					star.style.backgroundImage = "url('images/photo/" + star.number + ".png')";
 				}
 			}
 		},
@@ -341,4 +340,15 @@
 
 (function () {
 	new CrushGame();
+
+	// ✅ Reset button with confirmation
+	const resetBtn = document.getElementById('resetGameBtn');
+	if (resetBtn) {
+		resetBtn.addEventListener('click', function () {
+			if (confirm('Are you sure you want to reset the game to level 1?')) {
+				localStorage.setItem('starCrushLevel', 1);
+				location.reload();
+			}
+		});
+	}
 })();
