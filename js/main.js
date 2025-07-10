@@ -41,40 +41,46 @@
 	}
 
 	CrushGame.prototype = {
-		init: function () {
-			// Load level from localStorage
-			const savedLevel = localStorage.getItem('starCrushLevel');
-		        const savedTargetScore = localStorage.getItem('starCrushTargetScore');
-			const savedLevel = localStorage.getItem('starCrushLevel');
-			computed.level = savedLevel ? parseInt(savedLevel, 10) : 1;
-			this.initTable();
-		},
+	init: function () {
+		// Load saved level and targetScore from localStorage or set defaults
+		const savedLevel = localStorage.getItem('starCrushLevel');
+		const savedTargetScore = localStorage.getItem('starCrushTargetScore');
+		computed.level = savedLevel ? parseInt(savedLevel, 10) : 1;
+		config.targetScore = savedTargetScore ? parseInt(savedTargetScore, 10) : 1000;
 
-		initTable: function () {
-			this.initScore();
-			this.initStarSet();
-			this.initBlockStars();
-		},
+		this.initTable();
+	},
 
-		initScore: function () {
-	           new Utils(config.scoreCurrent, computed.totalScore, 0).start();
+	initTable: function () {
+		this.initScore();
+		this.initStarSet();
+		this.initBlockStars();
+	},
 
-	           if (computed.win) {
-		       config.targetScore += computed.stepTargetScore;
-		       computed.level += 1;
+	initScore: function () {
+		new Utils(config.scoreCurrent, computed.totalScore, 0).start();
 
-		       localStorage.setItem("starCrushLevel", computed.level);
-		       localStorage.setItem("starCrushTargetScore", config.targetScore);
+		if (computed.win) {
+			// Increase level and targetScore only once per win
+			config.targetScore += computed.stepTargetScore;
+			computed.level += 1;
 
-		       new Utils(config.scoreTarget, config.targetScore, config.targetScore).start();
-		       new Utils(config.scoreLevel, computed.level, computed.level).start();
-	          } else {
-		      new Utils(config.scoreTarget, config.targetScore, config.targetScore).start();
-		      new Utils(config.scoreLevel, computed.level, computed.level).start();
-	          }
+			// Save to localStorage
+			localStorage.setItem("starCrushLevel", computed.level);
+			localStorage.setItem("starCrushTargetScore", config.targetScore);
 
-	           computed.totalScore = 0;
-                 }
+			new Utils(config.scoreTarget, config.targetScore, config.targetScore).start();
+			new Utils(config.scoreLevel, computed.level, computed.level).start();
+
+			// Reset win flag so level doesn't keep incrementing on reload
+			computed.win = false;
+		} else {
+			new Utils(config.scoreTarget, config.targetScore, config.targetScore).start();
+			new Utils(config.scoreLevel, computed.level, computed.level).start();
+		}
+
+		computed.totalScore = 0;
+	        }
 
 		mouseClick: function () {
 			var starSet = config.starSet,
