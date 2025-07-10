@@ -253,17 +253,20 @@ ul,li{
 	margin-top: 1rem;
 }
 
-#resetGameBtn {
-  padding: 0.3rem 0.7rem;
-  font-size: 0.9rem;
-  background-color: #ff5555;
-  color: white;
-  border: none;
-  border-radius: 3px;
+.reset-btn {
+  display: block;
+  margin: 0.8rem auto 1rem auto; /* center below stars with some spacing */
+  padding: 0.5rem 1.2rem;
+  background-color: #f0f0f0; /* subtle background */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  color: #333; /* normal text color */
+  transition: color 0.3s ease;
 }
 
-#resetGameBtn:hover {
-  background-color: #cc0000;
+.reset-btn:hover {
+  color: red; /* text color changes on hover */
+  background-color: #f0f0f0; /* keep background same */
 }
