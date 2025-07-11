@@ -26,6 +26,7 @@
 		win: false
 	};
 
+        }
 	
 	function BlockStar(number, row, col) {
 		var star = document.createElement('li');
