@@ -322,7 +322,7 @@
 					star.col = j;
 					star.style.left = star.col * config.starWidth + "rem";
 					star.style.bottom = star.row * config.starHeight + "rem";
-					star.style.backgroundImage = "url('../images/photo/" + star.number + ".png')";
+					star.style.backgroundImage = "url('/StarCrush/images/photo/" + star.number + ".png')";
 				}
 			}
 		},
