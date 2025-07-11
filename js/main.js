@@ -57,8 +57,9 @@
 		initScore: function () {
 			new Utils(config.scoreCurrent, computed.totalScore, 0).start();
 			if (computed.win) {
+				// Only update target score, not level — level already updated before
 				new Utils(config.scoreTarget, config.targetScore, config.targetScore += computed.stepTargetScore).start();
-				new Utils(config.scoreLevel, computed.level, computed.level += 1).start();
+				new Utils(config.scoreLevel, computed.level - 1, computed.level).start();
 			} else {
 				new Utils(config.scoreTarget, config.targetScore, config.targetScore).start();
 				new Utils(config.scoreLevel, computed.level, computed.level).start();
@@ -74,6 +75,7 @@
 				el = config.el,
 				self = this,
 				len = choose.length;
+
 			if (!computed.flag || len <= 1) {
 				return;
 			} else {
@@ -96,15 +98,16 @@
 					self.move();
 					setTimeout(function () {
 						if (computed.totalScore >= config.targetScore) {
+							// ✅ Immediately increment level and save to localStorage
+							computed.level += 1;
+							localStorage.setItem('starCrushLevel', computed.level);
+							computed.win = true;
+
 							self.gameover('win');
 							setTimeout(function () {
 								self.clear();
 							}, 2000);
 							computed.flag = true;
-							computed.win = true;
-
-							// Save level to localStorage
-							localStorage.setItem('starCrushLevel', computed.level);
 						} else {
 							if (self.isFinish()) {
 								self.gameover('lose');
@@ -114,7 +117,7 @@
 								computed.flag = true;
 								computed.win = false;
 
-								// Optional: reset level to 1 after loss
+								// Reset level to 1 on loss
 								computed.level = 1;
 								localStorage.setItem('starCrushLevel', computed.level);
 							} else {
@@ -296,20 +299,16 @@
 			arr.push(obj);
 			var starSet = config.starSet,
 				rows = config.tableRows;
-			if (obj.col > 0 && starSet[obj.row][obj.col - 1] && starSet[obj.row][obj.col - 1].number === obj.number && arr.indexOf(
-				starSet[obj.row][obj.col - 1]) === -1) {
+			if (obj.col > 0 && starSet[obj.row][obj.col - 1] && starSet[obj.row][obj.col - 1].number === obj.number && arr.indexOf(starSet[obj.row][obj.col - 1]) === -1) {
 				this.checkLink(starSet[obj.row][obj.col - 1], arr);
 			}
-			if (obj.col < rows - 1 && starSet[obj.row][obj.col + 1] && starSet[obj.row][obj.col + 1].number === obj.number &&
-				arr.indexOf(starSet[obj.row][obj.col + 1]) === -1) {
+			if (obj.col < rows - 1 && starSet[obj.row][obj.col + 1] && starSet[obj.row][obj.col + 1].number === obj.number && arr.indexOf(starSet[obj.row][obj.col + 1]) === -1) {
 				this.checkLink(starSet[obj.row][obj.col + 1], arr);
 			}
-			if (obj.row < rows - 1 && starSet[obj.row + 1][obj.col] && starSet[obj.row + 1][obj.col].number === obj.number &&
-				arr.indexOf(starSet[obj.row + 1][obj.col]) === -1) {
+			if (obj.row < rows - 1 && starSet[obj.row + 1][obj.col] && starSet[obj.row + 1][obj.col].number === obj.number && arr.indexOf(starSet[obj.row + 1][obj.col]) === -1) {
 				this.checkLink(starSet[obj.row + 1][obj.col], arr);
 			}
-			if (obj.row > 0 && starSet[obj.row - 1][obj.col] && starSet[obj.row - 1][obj.col].number === obj.number && arr.indexOf(
-				starSet[obj.row - 1][obj.col]) === -1) {
+			if (obj.row > 0 && starSet[obj.row - 1][obj.col] && starSet[obj.row - 1][obj.col].number === obj.number && arr.indexOf(starSet[obj.row - 1][obj.col]) === -1) {
 				this.checkLink(starSet[obj.row - 1][obj.col], arr);
 			}
 		},
