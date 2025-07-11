@@ -45,6 +45,7 @@
 			// Load level from localStorage
 			const savedLevel = localStorage.getItem('starCrushLevel');
 			computed.level = savedLevel ? parseInt(savedLevel, 10) : 1;
+			console.log('[INIT] Loaded level from localStorage:', computed.level);
 			this.initTable();
 		},
 
@@ -57,9 +58,8 @@
 		initScore: function () {
 			new Utils(config.scoreCurrent, computed.totalScore, 0).start();
 			if (computed.win) {
-				// Only update target score, not level — level already updated before
 				new Utils(config.scoreTarget, config.targetScore, config.targetScore += computed.stepTargetScore).start();
-				new Utils(config.scoreLevel, computed.level - 1, computed.level).start();
+				new Utils(config.scoreLevel, computed.level, computed.level).start();
 			} else {
 				new Utils(config.scoreTarget, config.targetScore, config.targetScore).start();
 				new Utils(config.scoreLevel, computed.level, computed.level).start();
@@ -98,12 +98,15 @@
 					self.move();
 					setTimeout(function () {
 						if (computed.totalScore >= config.targetScore) {
-							// ✅ Immediately increment level and save to localStorage
+							// ✅ WIN: Update level BEFORE clear and restart
 							computed.level += 1;
 							localStorage.setItem('starCrushLevel', computed.level);
-							computed.win = true;
+							console.log('[WIN] Level incremented to:', computed.level);
+							console.log('[WIN] Saved level in localStorage:', localStorage.getItem('starCrushLevel'));
 
+							computed.win = true;
 							self.gameover('win');
+
 							setTimeout(function () {
 								self.clear();
 							}, 2000);
@@ -117,9 +120,8 @@
 								computed.flag = true;
 								computed.win = false;
 
-								// Reset level to 1 on loss
-								computed.level = 1;
-								localStorage.setItem('starCrushLevel', computed.level);
+								// ✅ Do not reset level if you want to continue same level
+								console.log('[LOSE] Staying at level:', computed.level);
 							} else {
 								choose = [];
 								computed.flag = true;
@@ -142,7 +144,7 @@
 				msg = 'You Win!';
 				next = 'Loading next level';
 			} else {
-				msg = 'You Loss :(';
+				msg = 'You Lose :(';
 				next = 'Continue with current level';
 			}
 			var p = document.createElement('p');
@@ -166,8 +168,7 @@
 
 			var gameover = document.querySelector('#gameover');
 			if (gameover != null) {
-				var elGameover = document.getElementById('gameover');
-				elGameover.parentNode.removeChild(elGameover);
+				gameover.parentNode.removeChild(gameover);
 			}
 
 			for (var i = rows - 1; i >= 0; i--) {
@@ -179,7 +180,7 @@
 					starSet[i][j] = null;
 				}
 			}
-			for (var k = 0; k < temp.length; k++) {
+			for (let k = 0; k < temp.length; k++) {
 				setTimeout(function (k) {
 					el.removeChild(temp[k]);
 					if (k >= temp.length - 1) {
@@ -264,12 +265,10 @@
 			for (var i = 0; i < len; i++) {
 				score += baseScore + i * stepScore;
 			}
-			if (score <= 0) {
-				return;
-			}
+			if (score <= 0) return;
 			computed.score = score;
 			config.scoreSelect.style.opacity = '1';
-			config.scoreSelect.innerHTML = "Crush " + arr.length + " stars to get " + score + " points";
+			config.scoreSelect.innerHTML = `Crush ${arr.length} stars to get ${score} points`;
 		},
 
 		clearFlicker: function () {
@@ -277,9 +276,7 @@
 			for (var i = 0; i < starSet.length; i++) {
 				for (var j = 0; j < starSet[i].length; j++) {
 					var div = starSet[i][j];
-					if (div === null) {
-						continue;
-					}
+					if (div === null) continue;
 					div.classList.remove("scale");
 				}
 			}
@@ -293,23 +290,28 @@
 		},
 
 		checkLink: function (obj, arr) {
-			if (obj === null) {
-				return;
-			}
+			if (obj === null) return;
 			arr.push(obj);
 			var starSet = config.starSet,
 				rows = config.tableRows;
-			if (obj.col > 0 && starSet[obj.row][obj.col - 1] && starSet[obj.row][obj.col - 1].number === obj.number && arr.indexOf(starSet[obj.row][obj.col - 1]) === -1) {
-				this.checkLink(starSet[obj.row][obj.col - 1], arr);
-			}
-			if (obj.col < rows - 1 && starSet[obj.row][obj.col + 1] && starSet[obj.row][obj.col + 1].number === obj.number && arr.indexOf(starSet[obj.row][obj.col + 1]) === -1) {
-				this.checkLink(starSet[obj.row][obj.col + 1], arr);
-			}
-			if (obj.row < rows - 1 && starSet[obj.row + 1][obj.col] && starSet[obj.row + 1][obj.col].number === obj.number && arr.indexOf(starSet[obj.row + 1][obj.col]) === -1) {
-				this.checkLink(starSet[obj.row + 1][obj.col], arr);
-			}
-			if (obj.row > 0 && starSet[obj.row - 1][obj.col] && starSet[obj.row - 1][obj.col].number === obj.number && arr.indexOf(starSet[obj.row - 1][obj.col]) === -1) {
-				this.checkLink(starSet[obj.row - 1][obj.col], arr);
+
+			const directions = [
+				[0, -1], [0, 1], [1, 0], [-1, 0]
+			];
+
+			for (const [dx, dy] of directions) {
+				const newRow = obj.row + dx;
+				const newCol = obj.col + dy;
+
+				if (
+					newRow >= 0 && newRow < rows &&
+					newCol >= 0 && newCol < rows &&
+					starSet[newRow][newCol] &&
+					starSet[newRow][newCol].number === obj.number &&
+					arr.indexOf(starSet[newRow][newCol]) === -1
+				) {
+					this.checkLink(starSet[newRow][newCol], arr);
+				}
 			}
 		},
 
@@ -354,14 +356,12 @@
 				var row = starSet[i].length;
 				for (var j = 0; j < row; j++) {
 					var star = starSet[i][j];
-					if (star == null) {
-						continue;
-					}
+					if (star == null) continue;
 					star.row = i;
 					star.col = j;
 					star.style.left = star.col * config.starWidth + "rem";
 					star.style.bottom = star.row * config.starHeight + "rem";
-					star.style.backgroundImage = "url('/StarCrush/images/photo/" + starSet[i][j].number + ".png')";
+					star.style.backgroundImage = "url('/StarCrush/images/photo/" + star.number + ".png')";
 				}
 			}
 		},
@@ -375,15 +375,16 @@
 	window.CrushGame = CrushGame;
 })();
 
+// Start game and reset button
 (function () {
 	new CrushGame();
 
-	// ✅ Reset button with confirmation
 	const resetBtn = document.getElementById('resetGameBtn');
 	if (resetBtn) {
 		resetBtn.addEventListener('click', function () {
 			if (confirm('Are you sure you want to reset the game to level 1?')) {
 				localStorage.setItem('starCrushLevel', 1);
+				console.log('[RESET] Game manually reset to level 1');
 				location.reload();
 			}
 		});
