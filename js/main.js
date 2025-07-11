@@ -116,7 +116,7 @@
 							}, 2000);
 							computed.flag = true;
 							computed.win = false;
-							computed.level = 1;
+							// computed.level = 1;
 							localStorage.setItem('starCrushLevel', computed.level);
 						} else {
 							choose = [];
