@@ -29,7 +29,7 @@
 	function getTargetScoreForLevel(level) {
 		let score = 1000;
 		for (let i = 2; i <= level; i++) {
-			score += i * 500;
+			score += 500;
 		}
 		return score;
 	}
@@ -324,7 +324,7 @@
 					star.col = j;
 					star.style.left = star.col * config.starWidth + "rem";
 					star.style.bottom = star.row * config.starHeight + "rem";
-					star.style.backgroundImage = "url('images/photo/" + star.number + ".png')";
+					star.style.backgroundImage = "url('/StarCrush/images/photo/" + starSet[i][j].number + ".png')";
 				}
 			}
 		},
