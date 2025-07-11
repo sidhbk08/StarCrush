@@ -214,7 +214,7 @@ ul,li{
     margin-bottom: 6px;
     bottom: 0;
 }
-#footer .desc .footer-reset-btn{
+#footer .desc #footerGameBtn{
     float: left;
     color: #777;
     padding: 5px 15px 0px 10px;
