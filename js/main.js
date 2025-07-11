@@ -27,11 +27,9 @@
 	};
 
 	function getTargetScoreForLevel(level) {
-		let score = 1000;
-		for (let i = 2; i <= level; i++) {
-			score += i * 500;
-		}
-		return score;
+                return 1000 + (level - 1) * 500;
+        }
+
 	}
 
 	function BlockStar(number, row, col) {
