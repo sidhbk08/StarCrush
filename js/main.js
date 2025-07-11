@@ -26,7 +26,10 @@
 		win: false
 	};
 
-	
+	function getTargetScoreForLevel(level) {
+                return 1000 + (level - 1) * 500;
+        }
+
 	}
 
 	function BlockStar(number, row, col) {
